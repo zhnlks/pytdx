@@ -4,14 +4,15 @@ from pytdx.parser.base import BaseParser
 from pytdx.helper import get_datetime, get_volume, get_price, get_time
 from collections import OrderedDict
 import struct
+import six
 
 class GetHistoryTransactionData(BaseParser):
 
     def setParams(self, market, code, start, count, date):
-        if type(code) is str:
+        if type(code) is six.text_type:
             code = code.encode("utf-8")
 
-        if type(date) is str:
+        if type(date) is (type(date) is six.text_type) or (type(date) is six.binary_type):
             date = int(date)
 
         pkg = bytearray.fromhex(u'0c 01 30 01 00 01 12 00 12 00 b5 0f')
@@ -55,3 +56,8 @@ class GetHistoryTransactionData(BaseParser):
         return ticks
 
 
+if __name__ == '__main__':
+    from pytdx.hq import TdxHq_API
+    api = TdxHq_API()
+    with api.connect():
+        print(api.to_df(api.get_history_transaction_data(0, '000001', 0, 10, 20170811)))
